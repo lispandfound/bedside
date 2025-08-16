@@ -32,8 +32,9 @@ class Weather(StrEnum):
 
 
 async def get_weather_code() -> Weather:
-    request = await aiohttp.request(WEATHER_URL)
-    weather_payload = request.json()
+    async with aiohttp.ClientSession() as session:
+        async with session.get(WEATHER_URL) as response:
+            weather_payload = await response.json()
     return Weather.from_wmo(weather_payload["daily"]["weather_code"][0])
 
 

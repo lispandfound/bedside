@@ -54,18 +54,21 @@ async def draw_widget_maybe(queue: Queue[Widget], widget: Coroutine[Any, Any, Wi
         await queue.put(widget_real)
 
 
-def schedule_mewo(scheduler: Scheduler, queue: Queue[Widget]):
+def schedule_mewo(scheduler: Scheduler, queue: Queue[Widget]) -> None:
     mewo = Mewo(z=-99)
     scheduler.hourly(datetime.time(minute=randint(0, 59), second=0), lambda: draw_widget_maybe(queue, mewo.random()))
     scheduler.daily(datetime.time(hour=21, minute=0), lambda: draw_widget_maybe(queue, mewo.sleep()))
     scheduler.daily(datetime.time(hour=7, minute=0), lambda: mewo.awake())
+
+
+def schedule_weather(scheduler: Scheduler, queue: Queue[Widget]) -> None:
     scheduler.minutely(datetime.time(second=0), lambda: draw_widget_maybe(queue, get_weather()))
-    # scheduler.daily(datetime.time(hour=6, minute=0), lambda: draw_widget_maybe(queue, get_weather()))
 
 
 async def run_scheduler(queue: Queue[Widget]):
     scheduler = Scheduler()
     schedule_mewo(scheduler, queue)
+    schedule_weather(scheduler, queue)
     while True:
         await asyncio.sleep(1)
 
