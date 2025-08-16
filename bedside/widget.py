@@ -7,7 +7,7 @@ HEIGHT = 480
 
 
 def blank() -> Image.Image:
-    return Image.new("1", (WIDTH, HEIGHT), 255)
+    return Image.new("RGBA", (WIDTH, HEIGHT), (255, 255, 255, 0))
 
 
 @dataclass
