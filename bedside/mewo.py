@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from enum import StrEnum
 from importlib import resources
 from random import choice
-from typing import Callable
 
 from PIL import Image
 from widget import Widget
