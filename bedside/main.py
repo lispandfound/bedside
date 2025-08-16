@@ -21,19 +21,24 @@ async def process_event_loop(queue: Queue[Widget]) -> None:
         epd.init()
         epd.Clear()
         widgets[new_widget.name] = new_widget
-        bw = Image.new("1", (epd.width, epd.height), 255)
-        red = Image.new("1", (epd.width, epd.height), 255)
+        bw = Image.new("RGBA", (epd.width, epd.height), (255, 255, 255, 0))
+        red = Image.new("RGBA", (epd.width, epd.height), (255, 255, 255, 0))
+
         for widget in sorted(widgets.values(), key=lambda w: w.z):
-            bw.paste(widget.bw)
-            red.paste(widget.red)
-        epd.display(epd.getbuffer(bw), epd.getbuffer(red))
+            bw.alpha_composite(widget.bw)  # preserves alpha
+            red.alpha_composite(widget.red)
+
+        bw_final = bw.convert("1")
+        red_final = red.convert("1")
+
+        epd.display(epd.getbuffer(bw_final), epd.getbuffer(red_final))
         await asyncio.sleep(2)
         epd.sleep()
 
 
 async def background(queue: Queue[Widget]) -> None:
     with resources.open_binary(bedside, "assets", "background.bmp") as f:
-        background_image = Image.open(f).convert(mode="1")
+        background_image = Image.open(f).convert("RGBA")
     widget = Widget(bw=background_image, name="background", z=-100)
     await queue.put(widget)
 
