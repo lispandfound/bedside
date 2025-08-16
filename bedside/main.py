@@ -4,7 +4,7 @@ from asyncio.queues import Queue
 from importlib import resources
 
 from PIL import Image
-from scheduler import Scheduler
+from scheduler.asyncio import Scheduler
 
 import bedside
 from bedside import epd7in5b_V2
@@ -76,4 +76,5 @@ if __name__ == "__main__":
         print("Bailing!")
         print(e)
     finally:
+        print("Closing EPD")
         epd7in5b_V2.epdconfig.module_exit(cleanup=True)
