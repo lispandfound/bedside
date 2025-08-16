@@ -1,10 +1,3 @@
-import platform
-
-
-def is_raspberry_pi():
-    return "raspberrypi" in platform.uname().node.lower()
-
-
 import asyncio
 import datetime
 from asyncio.queues import Queue
@@ -17,8 +10,8 @@ import bedside
 from bedside.mewo import Mewo
 from bedside.widget import Widget
 
-if is_raspberry_pi():
-    from waveshare_epd import epd7in5b_V2
+from bedside import epd7in5b_V2
+
 
 from bedside.mock import MockEPD
 
@@ -79,7 +72,12 @@ async def main():
     queue = Queue(10)
     event_loop = asyncio.create_task(process_event_loop(queue))
     background_task = asyncio.create_task(background(queue))
-    await asyncio.gather(event_loop, background_task)
+    scheduler_task = asyncio.create_task(run_scheduler(queue))
+    await asyncio.gather(
+        event_loop,
+        background_task
+        scheduler_task,
+    )
 
 
 if __name__ == "__main__":
