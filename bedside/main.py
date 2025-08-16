@@ -9,8 +9,11 @@ import asyncio
 from asyncio.queues import Queue
 from dataclasses import dataclass
 from datetime import datetime
+from importlib import resources
 
 from PIL import Image, ImageDraw, ImageFont
+
+import bedside
 
 if is_raspberry_pi():
     from waveshare_epd import epd7in5b_V2
@@ -52,24 +55,18 @@ async def process_event_loop(queue: Queue[Widget]) -> None:
         epd.sleep()
 
 
-async def show_time(queue: Queue[Widget]) -> None:
-    while True:
-        bw = Image.new("1", (WIDTH, HEIGHT), 255)
-        red = Image.new("1", (WIDTH, HEIGHT), 255)
-        bw_draw = ImageDraw.ImageDraw(bw)
-        font24 = ImageFont.truetype("Font.ttc", 48)
-        now = datetime.now()
-        bw_draw.text((200, 20), now.strftime("%H:%M"))
-        widget = Widget(name="time", bw=bw, red=red, z=0)
-        await queue.put(widget)
-        await asyncio.sleep(60)
+async def background(queue: Queue[Widget]) -> None:
+    with resources.open_binary(bedside, "assets", "background.bmp") as f:
+        background_image = Image.open(f).convert(mode="1")
+    red = Image.new("1", (WIDTH, HEIGHT), 255)
+    widget = Widget(bw=background_image, red=red, name="background", z=-100)
+    await queue.put(widget)
 
 
 async def main():
     queue = Queue(10)
     event_loop = asyncio.create_task(process_event_loop(queue))
-    time = asyncio.create_task(show_time(queue))
-    await asyncio.gather(event_loop, time)
+    await asyncio.gather(event_loop, background)
 
 
 if __name__ == "__main__":
