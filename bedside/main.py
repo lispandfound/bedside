@@ -2,6 +2,8 @@ import asyncio
 import datetime
 from asyncio.queues import Queue
 from importlib import resources
+from random import randint
+from typing import Any, Coroutine
 
 from PIL import Image
 from scheduler.asyncio import Scheduler
@@ -9,6 +11,7 @@ from scheduler.asyncio import Scheduler
 import bedside
 from bedside import epd7in5b_V2
 from bedside.mewo import Mewo
+from bedside.weather import get_weather
 from bedside.widget import Widget
 
 
@@ -43,16 +46,21 @@ async def background(queue: Queue[Widget]) -> None:
     await queue.put(widget)
 
 
-async def draw_widget_maybe(queue: Queue[Widget], widget: Widget | None) -> None:
-    if widget:
+async def draw_widget_maybe(queue: Queue[Widget], widget: Coroutine[Any, Any, Widget] | Widget | None) -> None:
+    if isinstance(widget, Widget):
         await queue.put(widget)
+    elif widget is not None:
+        widget_real = await widget
+        await queue.put(widget_real)
 
 
 def schedule_mewo(scheduler: Scheduler, queue: Queue[Widget]):
     mewo = Mewo(z=-99)
-    scheduler.minutely(datetime.time(second=0), lambda: draw_widget_maybe(queue, mewo.random()))
+    scheduler.hourly(datetime.time(minute=randint(0, 59), second=0), lambda: draw_widget_maybe(queue, mewo.random()))
     scheduler.daily(datetime.time(hour=21, minute=0), lambda: draw_widget_maybe(queue, mewo.sleep()))
     scheduler.daily(datetime.time(hour=7, minute=0), lambda: mewo.awake())
+    scheduler.minutely(datetime.time(second=0), lambda: draw_widget_maybe(queue, get_weather()))
+    # scheduler.daily(datetime.time(hour=6, minute=0), lambda: draw_widget_maybe(queue, get_weather()))
 
 
 async def run_scheduler(queue: Queue[Widget]):

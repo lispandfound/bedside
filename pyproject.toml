@@ -22,6 +22,7 @@ dependencies = [
     "lgpio",
     "numpy>=2.3.2",
     "pillow>=11.3.0",
+    "aiohttp>=3.12.15",
     "scheduler>=0.8.8",
     "spidev>=3.7",
 ]
