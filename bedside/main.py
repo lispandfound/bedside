@@ -7,13 +7,9 @@ from PIL import Image
 from scheduler import Scheduler
 
 import bedside
+from bedside import epd7in5b_V2
 from bedside.mewo import Mewo
 from bedside.widget import Widget
-
-from bedside import epd7in5b_V2
-
-
-
 
 
 async def process_event_loop(queue: Queue[Widget]) -> None:
@@ -68,7 +64,7 @@ async def main():
     scheduler_task = asyncio.create_task(run_scheduler(queue))
     await asyncio.gather(
         event_loop,
-        background_task
+        background_task,
         scheduler_task,
     )
 
