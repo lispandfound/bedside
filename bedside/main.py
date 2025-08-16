@@ -1,3 +1,4 @@
+import argparse
 import asyncio
 import datetime
 from asyncio.queues import Queue
@@ -11,7 +12,7 @@ from scheduler.asyncio import Scheduler
 import bedside
 from bedside import epd7in5b_V2
 from bedside.mewo import Mewo
-from bedside.weather import get_weather
+from bedside.weather import get_next_sunrise, get_next_sunset, get_night, get_weather
 from bedside.widget import Widget
 
 
@@ -61,23 +62,37 @@ def schedule_mewo(scheduler: Scheduler, queue: Queue[Widget]) -> None:
     scheduler.daily(datetime.time(hour=7, minute=0), lambda: mewo.awake())
 
 
-def schedule_weather(scheduler: Scheduler, queue: Queue[Widget]) -> None:
-    scheduler.minutely(datetime.time(second=0), lambda: draw_widget_maybe(queue, get_weather()))
+async def schedule_sunrise_sunset(
+    scheduler: Scheduler, queue: Queue[Widget], latitude: float, longitude: float
+) -> None:
+    sunrise = get_next_sunrise(latitude, longitude)
+    sunset = get_next_sunset(latitude, longitude)
+    scheduler.once(sunrise, lambda: draw_widget_maybe(queue, get_weather(latitude, longitude)))
+    scheduler.once(
+        max(sunrise, sunset) + datetime.timedelta(minutes=5),
+        schedule_sunrise_sunset,
+        args=(scheduler, queue, latitude, longitude),
+    )
+
+    scheduler.once(
+        sunset,
+        lambda: draw_widget_maybe(queue, get_night()),
+    )
 
 
-async def run_scheduler(queue: Queue[Widget]):
+async def run_scheduler(queue: Queue[Widget], latitude: float, longitude: float):
     scheduler = Scheduler()
     schedule_mewo(scheduler, queue)
-    schedule_weather(scheduler, queue)
+    await schedule_sunrise_sunset(scheduler, queue, latitude, longitude)
     while True:
         await asyncio.sleep(1)
 
 
-async def main():
+async def main(latitude: float, longitude: float):
     queue = Queue(10)
     event_loop = asyncio.create_task(process_event_loop(queue))
     background_task = asyncio.create_task(background(queue))
-    scheduler_task = asyncio.create_task(run_scheduler(queue))
+    scheduler_task = asyncio.create_task(run_scheduler(queue, latitude, longitude))
     await asyncio.gather(
         event_loop,
         background_task,
@@ -86,8 +101,12 @@ async def main():
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(prog="bedside", description="Bedside room display")
+    parser.add_argument("latitude", type=float)
+    parser.add_argument("longitude", type=float)
+    args = parser.parse_args()
     try:
-        asyncio.run(main())
+        asyncio.run(main(args.latitude, args.longitude))
     except Exception as e:
         print("Bailing!")
         print(e)
