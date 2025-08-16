@@ -13,17 +13,11 @@ from bedside.widget import Widget
 from bedside import epd7in5b_V2
 
 
-from bedside.mock import MockEPD
 
-WIDTH = 800
-HEIGHT = 480
 
 
 async def process_event_loop(queue: Queue[Widget]) -> None:
-    if is_raspberry_pi():
-        epd = epd7in5b_V2.EPD()
-    else:
-        epd = MockEPD()
+    epd = epd7in5b_V2.EPD()
 
     epd.init()
     epd.Clear()
@@ -44,8 +38,7 @@ async def process_event_loop(queue: Queue[Widget]) -> None:
 async def background(queue: Queue[Widget]) -> None:
     with resources.open_binary(bedside, "assets", "background.bmp") as f:
         background_image = Image.open(f).convert(mode="1")
-    red = Image.new("1", (WIDTH, HEIGHT), 255)
-    widget = Widget(bw=background_image, red=red, name="background", z=-100)
+    widget = Widget(bw=background_image, name="background", z=-100)
     await queue.put(widget)
 
 
