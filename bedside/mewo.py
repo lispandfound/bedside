@@ -12,7 +12,7 @@ _MEWO_WIDGET = "mewo"
 
 
 class MewoState(StrEnum):
-    SLEEPING = "sleeping"
+    SLEEP = "sleep"
     DESK = "desk"
     floor = "floor"
 
@@ -32,8 +32,8 @@ class Mewo:
     def sleep(self) -> Widget | None:
         if self.asleep:
             return
-        new = _mewo_img(MewoState.SLEEPING, self.z) if self.state != MewoState.SLEEPING else None
-        self.state = MewoState.SLEEPING
+        new = _mewo_img(MewoState.SLEEP, self.z) if self.state != MewoState.SLEEP else None
+        self.state = MewoState.SLEEP
         self.asleep = True
         return new
 

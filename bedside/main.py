@@ -15,11 +15,11 @@ from bedside.widget import Widget
 async def process_event_loop(queue: Queue[Widget]) -> None:
     epd = epd7in5b_V2.EPD()
 
-    epd.init()
-    epd.Clear()
     widgets: dict[str, Widget] = {}
     while True:
         new_widget = await queue.get()
+        epd.init()
+        epd.Clear()
         widgets[new_widget.name] = new_widget
         bw = Image.new("1", (epd.width, epd.height), 255)
         red = Image.new("1", (epd.width, epd.height), 255)
