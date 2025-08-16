@@ -24,7 +24,6 @@ dependencies = [
     "pillow>=11.3.0",
     "scheduler>=0.8.8",
     "spidev>=3.7",
-    "waveshare_epd @ {root:uri}/e-Paper/RaspberryPi_JetsonNano/python",
 ]
 
 [project.urls]
