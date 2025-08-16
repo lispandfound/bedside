@@ -72,5 +72,8 @@ async def main():
 if __name__ == "__main__":
     try:
         asyncio.run(main())
+    except Exception as e:
+        print("Bailing!")
+        print(e)
     finally:
         epd7in5b_V2.epdconfig.module_exit(cleanup=True)

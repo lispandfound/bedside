@@ -142,9 +142,10 @@ class RaspberryPi:
             self.SPI.mode = 0b00
         return 0
 
-    def module_exit(self, cleanup=False):
+    def module_exit(self, close: bool = True, cleanup=False):
         logger.debug("spi end")
-        self.SPI.close()
+        if close:
+            self.SPI.close()
 
         self.GPIO_RST_PIN.off()
         self.GPIO_DC_PIN.off()
