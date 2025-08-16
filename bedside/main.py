@@ -45,7 +45,7 @@ async def draw_widget_maybe(queue: Queue[Widget], widget: Widget | None) -> None
 
 def schedule_mewo(scheduler: Scheduler, queue: Queue[Widget]):
     mewo = Mewo(z=-99)
-    scheduler.minutely(lambda: draw_widget_maybe(queue, mewo.random()))
+    scheduler.minutely(datetime.time(second=0), lambda: draw_widget_maybe(queue, mewo.random()))
     scheduler.daily(datetime.time(hour=21, minute=0), lambda: draw_widget_maybe(queue, mewo.sleep()))
     scheduler.daily(datetime.time(hour=7, minute=0), lambda: mewo.awake())
 
