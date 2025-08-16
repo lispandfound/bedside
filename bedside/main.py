@@ -6,28 +6,21 @@ def is_raspberry_pi():
 
 
 import asyncio
+import datetime
 from asyncio.queues import Queue
-from dataclasses import dataclass
-from datetime import datetime
 from importlib import resources
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image
+from scheduler import Scheduler
 
 import bedside
+from bedside.mewo import Mewo
+from bedside.widget import Widget
 
 if is_raspberry_pi():
     from waveshare_epd import epd7in5b_V2
 
 from bedside.mock import MockEPD
-
-
-@dataclass
-class Widget:
-    bw: Image.Image
-    red: Image.Image
-    name: str
-    z: int
-
 
 WIDTH = 800
 HEIGHT = 480
@@ -61,6 +54,25 @@ async def background(queue: Queue[Widget]) -> None:
     red = Image.new("1", (WIDTH, HEIGHT), 255)
     widget = Widget(bw=background_image, red=red, name="background", z=-100)
     await queue.put(widget)
+
+
+async def draw_widget_maybe(queue: Queue[Widget], widget: Widget | None) -> None:
+    if widget:
+        await queue.put(widget)
+
+
+def schedule_mewo(scheduler: Scheduler, queue: Queue[Widget]):
+    mewo = Mewo(z=-99)
+    scheduler.minutely(lambda: draw_widget_maybe(queue, mewo.random()))
+    scheduler.daily(datetime.time(hour=21, minute=0), lambda: draw_widget_maybe(queue, mewo.sleep()))
+    scheduler.daily(datetime.time(hour=7, minute=0), lambda: mewo.awake())
+
+
+async def run_scheduler(queue: Queue[Widget]):
+    scheduler = Scheduler()
+    schedule_mewo(scheduler, queue)
+    while True:
+        await asyncio.sleep(1)
 
 
 async def main():
