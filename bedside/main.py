@@ -66,7 +66,8 @@ async def background(queue: Queue[Widget]) -> None:
 async def main():
     queue = Queue(10)
     event_loop = asyncio.create_task(process_event_loop(queue))
-    await asyncio.gather(event_loop, background)
+    background_task = asyncio.create_task(background(queue))
+    await asyncio.gather(event_loop, background_task)
 
 
 if __name__ == "__main__":
