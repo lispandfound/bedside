@@ -83,6 +83,5 @@ async def main():
 if __name__ == "__main__":
     try:
         asyncio.run(main())
-    except KeyboardInterrupt:
-        if is_raspberry_pi():
-            epd7in5b_V2.epdconfig.module_exit(cleanup=True)
+    finally:
+        epd7in5b_V2.epdconfig.module_exit(cleanup=True)
