@@ -160,6 +160,8 @@ async def initialise(latitude: float, longitude: float) -> list[Widget]:
     logger.info("Initial weather widget: %s", weather.name)
     widgets.append(weather)
 
+    widgets.append(get_bert())
+    logger.info("Adding bert widget")
     logger.debug("Initial widgets prepared: %s", [w.name for w in widgets])
     return widgets
 
