@@ -13,6 +13,7 @@ from scheduler.asyncio import Scheduler
 import bedside
 from bedside import epd7in5b_V2
 from bedside.mewo import Mewo
+from bedside.seasons import get_bert
 from bedside.weather import get_next_sunrise, get_next_sunset, get_night, get_weather
 from bedside.widget import Widget
 
@@ -125,10 +126,15 @@ async def schedule_sunrise_sunset(
     logger.debug(f"Scheduled night mode at {sunset=}")
 
 
+def schedule_bert(scheduler: Scheduler, queue: Queue[Widget]) -> None:
+    scheduler.daily(datetime.time(hour=0, minute=0, second=0), lambda: draw_widget_maybe(queue, get_bert()))
+
+
 async def run_scheduler(queue: Queue[Widget], latitude: float, longitude: float):
     logger.debug("Starting scheduler")
     scheduler = Scheduler()
     schedule_mewo(scheduler, queue)
+    schedule_bert(scheduler, queue)
     await schedule_sunrise_sunset(scheduler, queue, latitude, longitude)
 
     logger.info("Scheduler running")
