@@ -71,10 +71,7 @@ async def process_event_loop(queue: Queue[Widget], initial_widgets: list[Widget]
 async def draw_widget_maybe(queue: Queue[Widget], widget: Any) -> None:
     logger.debug("Entering draw_widget_maybe with widget type=%s", type(widget).__name__)
     try:
-        if type(widget).__name__ == "Widget":
-            logger.debug("Widget is already materialised: %s", widget.name)
-            await queue.put(widget)
-        elif inspect.isawaitable(widget):
+        if inspect.isawaitable(widget):
             logger.debug("Widget is awaitable, awaiting...")
             widget_real = await widget
             logger.debug("Awaitable produced widget '%s'", widget_real.name)
@@ -82,7 +79,8 @@ async def draw_widget_maybe(queue: Queue[Widget], widget: Any) -> None:
         elif widget is None:
             logger.debug("No widget to draw (None passed)")
         else:
-            logger.warning("Unexpected type passed to draw_widget_maybe: %s", type(widget))
+            logger.debug("Widget is already materialised: %s", widget.name)
+            await queue.put(widget)
     except Exception:
         logger.exception("Error in draw_widget_maybe")
 
