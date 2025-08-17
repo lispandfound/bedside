@@ -83,6 +83,8 @@ class EPD:
         while busy == 0:
             self.send_command(0x71)
             busy = epdconfig.digital_read(self.busy_pin)
+            # fix: why busy spin so much?
+            epdconfig.delay_ms(10)
         epdconfig.delay_ms(200)
         logger.debug("e-Paper busy release")
 

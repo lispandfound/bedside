@@ -16,10 +16,10 @@ from bedside.weather import get_next_sunrise, get_next_sunset, get_night, get_we
 from bedside.widget import Widget
 
 
-async def process_event_loop(queue: Queue[Widget]) -> None:
+async def process_event_loop(queue: Queue[Widget], initial_widgets: list[Widget]) -> None:
     epd = epd7in5b_V2.EPD()
 
-    widgets: dict[str, Widget] = {}
+    widgets: dict[str, Widget] = {widget.name: widget for widget in initial_widgets}
     while True:
         new_widget = await queue.get()
         epd.init()
@@ -40,13 +40,6 @@ async def process_event_loop(queue: Queue[Widget]) -> None:
         epd.sleep()
 
 
-async def background(queue: Queue[Widget]) -> None:
-    with resources.open_binary(bedside, "assets", "background.bmp") as f:
-        background_image = Image.open(f).convert("RGBA")
-    widget = Widget(bw=background_image, name="background", z=-100)
-    await queue.put(widget)
-
-
 async def draw_widget_maybe(queue: Queue[Widget], widget: Coroutine[Any, Any, Widget] | Widget | None) -> None:
     if isinstance(widget, Widget):
         await queue.put(widget)
@@ -56,7 +49,7 @@ async def draw_widget_maybe(queue: Queue[Widget], widget: Coroutine[Any, Any, Wi
 
 
 def schedule_mewo(scheduler: Scheduler, queue: Queue[Widget]) -> None:
-    mewo = Mewo(z=-99)
+    mewo = Mewo()
     scheduler.hourly(datetime.time(minute=randint(0, 59), second=0), lambda: draw_widget_maybe(queue, mewo.random()))
     scheduler.daily(datetime.time(hour=21, minute=0), lambda: draw_widget_maybe(queue, mewo.sleep()))
     scheduler.daily(datetime.time(hour=7, minute=0), lambda: mewo.awake())
@@ -88,14 +81,28 @@ async def run_scheduler(queue: Queue[Widget], latitude: float, longitude: float)
         await asyncio.sleep(1)
 
 
+async def initialise(latitude: float, longitude: float) -> list[Widget]:
+    with resources.open_binary(bedside, "assets", "background.bmp") as f:
+        background_image = Image.open(f).convert("RGBA")
+    background_widget = Widget(bw=background_image, name="background", z=-100)
+    mewo = Mewo().random()
+    widgets = [background_widget]
+    if mewo:
+        widgets.append(mewo)
+
+    weather = await get_weather(latitude, longitude)
+    widgets.append(weather)
+
+    return widgets
+
+
 async def main(latitude: float, longitude: float):
     queue = Queue(10)
-    event_loop = asyncio.create_task(process_event_loop(queue))
-    background_task = asyncio.create_task(background(queue))
+    event_loop = asyncio.create_task(process_event_loop(queue, await initialise(latitude, longitude)))
+
     scheduler_task = asyncio.create_task(run_scheduler(queue, latitude, longitude))
     await asyncio.gather(
         event_loop,
-        background_task,
         scheduler_task,
     )
 
