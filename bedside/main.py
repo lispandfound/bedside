@@ -2,6 +2,7 @@ import argparse
 import asyncio
 import datetime
 import logging
+import random
 from asyncio.queues import Queue
 from importlib import resources
 from random import randint
@@ -189,7 +190,7 @@ if __name__ == "__main__":
     parser.add_argument("latitude", type=float)
     parser.add_argument("longitude", type=float)
     args = parser.parse_args()
-
+    random.seed()
     try:
         asyncio.run(main(args.latitude, args.longitude))
     except Exception as e:
