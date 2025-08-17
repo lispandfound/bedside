@@ -16,28 +16,34 @@ from bedside.weather import get_next_sunrise, get_next_sunset, get_night, get_we
 from bedside.widget import Widget
 
 
+def display_widgets(epd: epd7in5b_V2.EPD, widgets: dict[str, Widget]) -> None:
+    epd.init()
+    epd.Clear()
+
+    bw = Image.new("RGBA", (epd.width, epd.height), (255, 255, 255, 0))
+    red = Image.new("RGBA", (epd.width, epd.height), (255, 255, 255, 0))
+
+    for widget in sorted(widgets.values(), key=lambda w: w.z):
+        bw.alpha_composite(widget.bw)  # preserves alpha
+        red.alpha_composite(widget.red)
+
+    bw_final = bw.convert("1")
+    red_final = red.convert("1")
+
+    epd.display(epd.getbuffer(bw_final), epd.getbuffer(red_final))
+
+
 async def process_event_loop(queue: Queue[Widget], initial_widgets: list[Widget]) -> None:
     epd = epd7in5b_V2.EPD()
 
     widgets: dict[str, Widget] = {widget.name: widget for widget in initial_widgets}
+
     while True:
-        new_widget = await queue.get()
-        epd.init()
-        epd.Clear()
-        widgets[new_widget.name] = new_widget
-        bw = Image.new("RGBA", (epd.width, epd.height), (255, 255, 255, 0))
-        red = Image.new("RGBA", (epd.width, epd.height), (255, 255, 255, 0))
-
-        for widget in sorted(widgets.values(), key=lambda w: w.z):
-            bw.alpha_composite(widget.bw)  # preserves alpha
-            red.alpha_composite(widget.red)
-
-        bw_final = bw.convert("1")
-        red_final = red.convert("1")
-
-        epd.display(epd.getbuffer(bw_final), epd.getbuffer(red_final))
+        display_widgets(epd, widgets)
         await asyncio.sleep(2)
         epd.sleep()
+        new_widget = await queue.get()
+        widgets[new_widget.name] = new_widget
 
 
 async def draw_widget_maybe(queue: Queue[Widget], widget: Coroutine[Any, Any, Widget] | Widget | None) -> None:
