@@ -1,6 +1,7 @@
 import argparse
 import asyncio
 import datetime
+import inspect
 import logging
 import random
 from asyncio.queues import Queue
@@ -67,19 +68,21 @@ async def process_event_loop(queue: Queue[Widget], initial_widgets: list[Widget]
             logger.exception("Error in process_event_loop")
 
 
-async def draw_widget_maybe(queue: Queue[Widget], widget: Coroutine[Any, Any, Widget] | Widget | None) -> None:
-    logger.debug("Entering draw_widget_maybe with widget=%s", type(widget).__name__)
+async def draw_widget_maybe(queue: Queue[Widget], widget: Any) -> None:
+    logger.debug("Entering draw_widget_maybe with widget type=%s", type(widget).__name__)
     try:
         if isinstance(widget, Widget):
-            logger.debug("Widget is already materialized: %s", widget.name)
+            logger.debug("Widget is already materialised: %s", widget.name)
             await queue.put(widget)
-        elif widget is not None:
-            logger.debug("Awaiting coroutine to produce widget")
+        elif inspect.isawaitable(widget):
+            logger.debug("Widget is awaitable, awaiting...")
             widget_real = await widget
-            logger.debug("Coroutine produced widget '%s'", widget_real.name)
+            logger.debug("Awaitable produced widget '%s'", widget_real.name)
             await queue.put(widget_real)
-        else:
+        elif widget is None:
             logger.debug("No widget to draw (None passed)")
+        else:
+            logger.warning("Unexpected type passed to draw_widget_maybe: %s", type(widget))
     except Exception:
         logger.exception("Error in draw_widget_maybe")
 
