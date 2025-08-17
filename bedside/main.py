@@ -71,7 +71,7 @@ async def process_event_loop(queue: Queue[Widget], initial_widgets: list[Widget]
 async def draw_widget_maybe(queue: Queue[Widget], widget: Any) -> None:
     logger.debug("Entering draw_widget_maybe with widget type=%s", type(widget).__name__)
     try:
-        if isinstance(widget, Widget):
+        if type(widget).__name__ == "Widget":
             logger.debug("Widget is already materialised: %s", widget.name)
             await queue.put(widget)
         elif inspect.isawaitable(widget):
