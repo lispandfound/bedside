@@ -20,12 +20,9 @@ class Widget:
     @property
     def bw(self) -> Image.Image:
         data = np.asarray(self.image)
-        # Abusing the fact that colours are only red or black.
+        # Abusing the fact that colours are only red or black or white.
         black_mask = (data[:, :, 3] == 255) & (data[:, :, 0] == 0)
-        out = np.zeros_like(data)
-        out[black_mask] = [0, 0, 0, 255]
-
-        return Image.fromarray(out)
+        return Image.fromarray(data * black_mask.astype(np.uint8)[..., np.newaxis])
 
     @property
     def red(self) -> Image.Image:
