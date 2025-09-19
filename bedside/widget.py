@@ -21,7 +21,11 @@ class Widget:
     def bw(self) -> Image.Image:
         data = np.asarray(self.image)
         # Abusing the fact that colours are only red or black or white.
-        black_mask = (data[:, :, 3] == 255) & (data[:, :, 0] == 0)
+        black_mask = ~(
+            (data[:, :, 3] == 255)  # opaque
+            & (data[:, :, 0] == 255)  # red
+            & (data[:, :, 1] == 0)  # green
+        )  # if not red, then black, white, or transparent
         return Image.fromarray(data * black_mask.astype(np.uint8)[..., np.newaxis])
 
     @property
