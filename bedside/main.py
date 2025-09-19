@@ -152,7 +152,10 @@ async def initialise(latitude: float, longitude: float) -> list[Widget]:
     background_widget = Widget(image=background_image, name="background", z=-100)
     logger.info("Background widget loaded")
     now = datetime.datetime.now()
-    mewo = Mewo(asleep=now.hour >= 21).random()
+    mewo_state = Mewo()
+    mewo = None
+    if 7 <= now.hour < 21:
+        mewo = mewo_state.random()
     widgets = [background_widget]
     if mewo:
         logger.info("Adding Mewo widget: %s", mewo.name)
