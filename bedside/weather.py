@@ -60,16 +60,16 @@ async def get_weather_code(latitude: float, longitude: float) -> Weather:
 async def get_weather(latitude: float, longitude: float) -> Widget:
     weather_code = await get_weather_code(latitude, longitude)
     if weather_code == Weather.SUNNY:
-        return Widget(name=_WEATHER_WIDGET, z=-99, bw=blank())
+        return Widget(name=_WEATHER_WIDGET, z=-99, image=blank())
     with resources.open_binary(bedside, "assets", "weather", f"{weather_code}.bmp") as f:
         weather = Image.open(f).convert(mode="RGBA")
-        return Widget(name=_WEATHER_WIDGET, z=-99, bw=weather)
+        return Widget(name=_WEATHER_WIDGET, z=-99, image=weather)
 
 
 def get_night() -> Widget:
     with resources.open_binary(bedside, "assets", "weather", "night.bmp") as f:
         night = Image.open(f).convert(mode="RGBA")
-        return Widget(name=_WEATHER_WIDGET, z=-99, bw=night)
+        return Widget(name=_WEATHER_WIDGET, z=-99, image=night)
 
 
 def get_next_sunrise(latitude: float, longitude: float) -> datetime.datetime:

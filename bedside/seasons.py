@@ -37,4 +37,4 @@ def get_bert() -> Widget:
     name = name_lookup[season]
     with resources.open_binary(bedside, "assets", "bert", f"{name}.bmp") as f:
         bert = Image.open(f).convert(mode="RGBA")
-    return Widget(name=_BERT_WIDGET, z=-99, bw=bert)
+    return Widget(name=_BERT_WIDGET, z=-99, image=bert)

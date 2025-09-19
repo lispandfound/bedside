@@ -7,7 +7,7 @@ import random
 from asyncio.queues import Queue
 from importlib import resources
 from random import randint
-from typing import Any, Coroutine
+from typing import Any
 
 from PIL import Image
 from scheduler.asyncio import Scheduler
@@ -149,7 +149,7 @@ async def initialise(latitude: float, longitude: float) -> list[Widget]:
     logger.debug("Initialising widgets")
     with resources.open_binary(bedside, "assets", "background.bmp") as f:
         background_image = Image.open(f).convert("RGBA")
-    background_widget = Widget(bw=background_image, name="background", z=-100)
+    background_widget = Widget(image=background_image, name="background", z=-100)
     logger.info("Background widget loaded")
 
     mewo = Mewo().random()

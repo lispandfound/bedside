@@ -20,7 +20,7 @@ class MewoState(StrEnum):
 def _mewo_img(state: MewoState, z: int) -> Widget:
     with resources.open_binary(bedside, "assets", "mewo", f"{state}.bmp") as f:
         mewo = Image.open(f).convert(mode="RGBA")
-    return Widget(name=_MEWO_WIDGET, z=z, bw=mewo)
+    return Widget(name=_MEWO_WIDGET, z=z, image=mewo)
 
 
 @dataclass
