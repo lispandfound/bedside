@@ -53,6 +53,7 @@ library
     , time
     , unix
     , vector
+    , zlib
 
   if flag(gui)
     exposed-modules: Bedside.Display.Window
