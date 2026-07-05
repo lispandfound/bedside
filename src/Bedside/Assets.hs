@@ -4,6 +4,7 @@
 file. All assets are full 800x480 canvases with alpha.
 -}
 module Bedside.Assets (
+    art,
     background,
     mewo,
     weather,
@@ -43,6 +44,15 @@ night = decodeAsset "weather/night" $(embedFile "assets/weather/night.bmp.gz")
 bert :: BertVariant -> Image PixelRGBA8
 bert Bloom = decodeAsset "bert/bloom" $(embedFile "assets/bert/bloom.bmp.gz")
 bert Leafless = decodeAsset "bert/leafless" $(embedFile "assets/bert/leafless.bmp.gz")
+
+art :: [Image PixelRGBA8]
+art =
+    [ decodeAsset "art/lorenz" $(embedFile "assets/art/lorenz.bmp.gz")
+    , decodeAsset "art/hedgehog" $(embedFile "assets/art/hedgehog.bmp.gz")
+    , decodeAsset "art/love" $(embedFile "assets/art/love.bmp.gz")
+    , decodeAsset "art/stones" $(embedFile "assets/art/stones.bmp.gz")
+    , decodeAsset "art/system" $(embedFile "assets/art/system.bmp.gz")
+    ]
 
 -- Assets are embedded and covered by tests, so a decode failure is a
 -- build defect, not a runtime condition worth threading Either through
