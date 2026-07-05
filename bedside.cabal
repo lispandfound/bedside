@@ -1,0 +1,94 @@
+cabal-version:   3.0
+name:            bedside
+version:         1.0.0
+synopsis:        Bedside e-paper display
+license:         MIT
+author:          Jake Faulkner
+maintainer:      jakefaulkn@gmail.com
+build-type:      Simple
+
+flag gui
+  description: Build the SDL2 preview window backend
+  default:     True
+  manual:      True
+
+common defaults
+  default-language: GHC2021
+  ghc-options:      -Wall -Wincomplete-uni-patterns
+
+library
+  import:          defaults
+  hs-source-dirs:  src
+  exposed-modules:
+    Bedside.App
+    Bedside.Assets
+    Bedside.Config
+    Bedside.Display
+    Bedside.Display.EPD
+    Bedside.EPD.Protocol
+    Bedside.Frame
+    Bedside.Hardware.Gpio
+    Bedside.Hardware.Spi
+    Bedside.Log
+    Bedside.Mewo
+    Bedside.Schedule
+    Bedside.Season
+    Bedside.Sun
+    Bedside.Weather
+    Bedside.Widget
+    Bedside.Widgets
+
+  build-depends:
+    , aeson
+    , base             >=4.18 && <5
+    , bytestring
+    , containers
+    , file-embed
+    , http-client
+    , http-client-tls
+    , JuicyPixels
+    , stm
+    , random
+    , text
+    , time
+    , unix
+    , vector
+
+  if flag(gui)
+    exposed-modules: Bedside.Display.Window
+    build-depends:   sdl2 >=2.5
+    cpp-options:     -DGUI
+
+executable bedside
+  import:         defaults
+  hs-source-dirs: app
+  main-is:        Main.hs
+  ghc-options:    -threaded
+  build-depends:
+    , base
+    , bedside
+    , optparse-applicative
+
+  if flag(gui)
+    cpp-options: -DGUI
+
+test-suite bedside-test
+  import:         defaults
+  type:           exitcode-stdio-1.0
+  hs-source-dirs: test
+  main-is:        Main.hs
+  other-modules:
+    ConfigTests
+    FrameTests
+    PortTests
+    ProtocolTests
+  build-depends:
+    , aeson
+    , base
+    , bedside
+    , bytestring
+    , JuicyPixels
+    , tasty
+    , tasty-hunit
+    , text
+    , time

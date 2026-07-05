@@ -1,0 +1,20 @@
+{
+    "location": {
+        "latitude": -43.5321,
+        "longitude": 172.6362
+    },
+
+    "widgets": {
+        "background": true,
+        "mewo": true,
+        "weather": true,
+        "bert": true
+    },
+
+    "schedule": {
+        "mewoBedtime": "21:00:00",
+        "mewoWake": "07:00:00",
+        "mewoWanderMinute": null,
+        "bertRefresh": "00:00:00"
+    }
+}
